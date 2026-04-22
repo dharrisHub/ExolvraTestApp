@@ -1,21 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace ExolvraTestApp;
 
 internal static class Program
 {
     private const int DefaultLength = 16;
-    private const int MinLength = 4;
-    private const int MaxLength = 1024;
-
-    private const string Lowercase = "abcdefghijklmnopqrstuvwxyz";
-    private const string Uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private const string Digits = "0123456789";
-    private const string Symbols = "!@#$%^&*()-_=+[]{};:,.<>/?";
-    private const string Ambiguous = "0O1lI|`'\"";
+    private const int MinCount = 1;
+    private const int MaxCount = 10_000;
 
     private sealed class Options
     {
@@ -24,9 +15,9 @@ internal static class Program
         public bool IncludeLower { get; set; } = true;
         public bool IncludeUpper { get; set; } = true;
         public bool IncludeDigits { get; set; } = true;
-        public bool IncludeSymbols { get; set; } = false;
-        public bool ExcludeAmbiguous { get; set; } = false;
-        public bool ShowHelp { get; set; } = false;
+        public bool IncludeSymbols { get; set; }
+        public bool ExcludeAmbiguous { get; set; }
+        public bool ShowHelp { get; set; }
     }
 
     public static int Main(string[] args)
@@ -58,20 +49,27 @@ internal static class Program
             }
         }
 
-        if (opts.Length < MinLength || opts.Length > MaxLength)
+        if (opts.Length < PasswordGenerator.MinLength || opts.Length > PasswordGenerator.MaxLength)
         {
-            Console.Error.WriteLine($"error: length must be between {MinLength} and {MaxLength} (got {opts.Length})");
+            Console.Error.WriteLine(
+                $"error: length must be between {PasswordGenerator.MinLength} and {PasswordGenerator.MaxLength} (got {opts.Length})");
             return 1;
         }
 
-        if (opts.Count < 1 || opts.Count > 10_000)
+        if (opts.Count < MinCount || opts.Count > MaxCount)
         {
-            Console.Error.WriteLine($"error: count must be between 1 and 10000 (got {opts.Count})");
+            Console.Error.WriteLine($"error: count must be between {MinCount} and {MaxCount} (got {opts.Count})");
             return 1;
         }
 
-        string charset = BuildCharset(opts);
-        if (charset.Length == 0)
+        var generator = new PasswordGenerator(new PasswordGenerator.Charset(
+            IncludeLower: opts.IncludeLower,
+            IncludeUpper: opts.IncludeUpper,
+            IncludeDigits: opts.IncludeDigits,
+            IncludeSymbols: opts.IncludeSymbols,
+            ExcludeAmbiguous: opts.ExcludeAmbiguous));
+
+        if (generator.AlphabetSize == 0)
         {
             Console.Error.WriteLine("error: no character classes enabled — password cannot be generated");
             return 2;
@@ -79,7 +77,7 @@ internal static class Program
 
         for (int i = 0; i < opts.Count; i++)
         {
-            Console.WriteLine(GeneratePassword(opts.Length, charset));
+            Console.WriteLine(generator.Generate(opts.Length));
         }
 
         return 0;
@@ -149,35 +147,6 @@ internal static class Program
             throw new ArgumentException($"{flag} expected a number, got '{raw}'");
         }
         return value;
-    }
-
-    private static string BuildCharset(Options o)
-    {
-        var sb = new StringBuilder();
-        if (o.IncludeLower) sb.Append(Lowercase);
-        if (o.IncludeUpper) sb.Append(Uppercase);
-        if (o.IncludeDigits) sb.Append(Digits);
-        if (o.IncludeSymbols) sb.Append(Symbols);
-
-        if (!o.ExcludeAmbiguous) return sb.ToString();
-
-        var filtered = new StringBuilder(sb.Length);
-        foreach (char c in sb.ToString())
-        {
-            if (Ambiguous.IndexOf(c) < 0) filtered.Append(c);
-        }
-        return filtered.ToString();
-    }
-
-    private static string GeneratePassword(int length, string charset)
-    {
-        var chars = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            int idx = RandomNumberGenerator.GetInt32(charset.Length);
-            chars[i] = charset[idx];
-        }
-        return new string(chars);
     }
 
     private static void PrintHelp()
