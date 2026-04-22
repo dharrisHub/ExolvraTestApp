@@ -1,11 +1,11 @@
 # ExolvraTestApp
 
-A small, no-dependency **cryptographic password generator** for the command line, written in C# on .NET 8. It uses `System.Security.Cryptography.RandomNumberGenerator.GetInt32` for unbiased random character selection — not `System.Random` or `Math.Random` — so the output is suitable for real secrets, not just toy passwords. Character classes, length, and count are all controlled via CLI flags; length can also be piped in on stdin for shell-pipeline use.
+A small, no-dependency **cryptographic password generator** for the command line, written in C# on .NET 10. It uses `System.Security.Cryptography.RandomNumberGenerator.GetInt32` for unbiased random character selection — not `System.Random` or `Math.Random` — so the output is suitable for real secrets, not just toy passwords. Character classes, length, and count are all controlled via CLI flags; length can also be piped in on stdin for shell-pipeline use.
 
 ## Requirements
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (LTS) to build.
-- .NET 8 runtime to run the built binary. (Newer runtimes work too — the project is published with `DOTNET_ROLL_FORWARD=LatestMajor` friendly defaults.)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) to build.
+- .NET 10 runtime to run the built binary. (Newer runtimes work too — the project is published with `DOTNET_ROLL_FORWARD=LatestMajor` friendly defaults.)
 
 ## Getting it
 
@@ -32,10 +32,10 @@ Or invoke the built binary directly:
 
 ```bash
 # Windows
-bin\Release\net8.0\ExolvraTestApp.exe -l 20 -s
+bin\Release\net10.0\ExolvraTestApp.exe -l 20 -s
 
 # Linux / macOS
-dotnet bin/Release/net8.0/ExolvraTestApp.dll -l 20 -s
+dotnet bin/Release/net10.0/ExolvraTestApp.dll -l 20 -s
 ```
 
 ## Usage
