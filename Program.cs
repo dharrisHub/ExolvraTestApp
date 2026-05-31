@@ -118,6 +118,7 @@ internal static class Program
 
                 case "-n":
                 case "--count":
+                case "--num":
                     o.Count = RequireInt(args, ref i, a);
                     break;
 
@@ -185,7 +186,7 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine("Options:");
         Console.WriteLine("  -l, --length N           Password length (default: 16, min: 4, max: 1024)");
-        Console.WriteLine("  -n, --count N            Number of passwords to generate (default: 1)");
+        Console.WriteLine("  -n, --count, --num N     Number of passwords to generate (default: 1)");
         Console.WriteLine("      --no-lower           Exclude lowercase letters");
         Console.WriteLine("      --no-upper           Exclude uppercase letters");
         Console.WriteLine("      --no-digits          Exclude digits");
