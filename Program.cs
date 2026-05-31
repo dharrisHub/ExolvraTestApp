@@ -17,6 +17,7 @@ internal static class Program
         public bool IncludeDigits { get; set; } = true;
         public bool IncludeSymbols { get; set; }
         public bool ExcludeAmbiguous { get; set; }
+        public string ExcludedChars { get; set; } = string.Empty;
         public bool ShowHelp { get; set; }
     }
 
@@ -67,11 +68,12 @@ internal static class Program
             IncludeUpper: opts.IncludeUpper,
             IncludeDigits: opts.IncludeDigits,
             IncludeSymbols: opts.IncludeSymbols,
-            ExcludeAmbiguous: opts.ExcludeAmbiguous));
+            ExcludeAmbiguous: opts.ExcludeAmbiguous,
+            ExcludedChars: opts.ExcludedChars));
 
         if (generator.AlphabetSize == 0)
         {
-            Console.Error.WriteLine("error: no character classes enabled — password cannot be generated");
+            Console.Error.WriteLine("error: resulting alphabet is empty — password cannot be generated");
             return 2;
         }
 
@@ -128,6 +130,10 @@ internal static class Program
                     o.ExcludeAmbiguous = true;
                     break;
 
+                case "--exclude-chars":
+                    o.ExcludedChars = RequireValue(args, ref i, a);
+                    break;
+
                 default:
                     throw new ArgumentException($"unknown option '{a}'");
             }
@@ -149,6 +155,15 @@ internal static class Program
         return value;
     }
 
+    private static string RequireValue(string[] args, ref int i, string flag)
+    {
+        if (i + 1 >= args.Length)
+        {
+            throw new ArgumentException($"{flag} requires a value");
+        }
+        return args[++i];
+    }
+
     private static void PrintHelp()
     {
         Console.WriteLine("ExolvraTestApp — cryptographic password generator");
@@ -163,6 +178,7 @@ internal static class Program
         Console.WriteLine("      --no-digits          Exclude digits");
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
+        Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
         Console.WriteLine("  -h, --help               Show this help");
         Console.WriteLine();
         Console.WriteLine("If stdin is piped and contains a number, it is used as the length.");

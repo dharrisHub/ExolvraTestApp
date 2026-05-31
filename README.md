@@ -53,6 +53,7 @@ ExolvraTestApp [options]
 |  | `--no-digits` | off | Exclude digits `0–9`. |
 | `-s` | `--symbols` | off | Include symbols `!@#$%^&*()-_=+[]{};:,.<>/?`. |
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
+|  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
 | `-h` | `--help` |  | Print help and exit. |
 
 If **stdin is piped** and its first line is a number, that number is used as the password length (overriding `-l`).
@@ -79,6 +80,12 @@ Five passwords, no visually ambiguous chars:
 $ ExolvraTestApp -n 5 -x
 ```
 
+Exclude specific characters from the generated alphabet:
+
+```bash
+$ ExolvraTestApp -l 20 --exclude-chars O0l1
+```
+
 Digits only, length 8 (e.g. a PIN):
 
 ```bash
@@ -97,7 +104,7 @@ $ echo 24 | ExolvraTestApp
 |---|---|---|
 | `0` | Success — password(s) printed to stdout. | `ExolvraTestApp --help` or any valid generation. |
 | `1` | Invalid argument — bad flag, non-numeric value, or length/count out of range. | `-l 2` → `error: length must be between 4 and 1024 (got 2)`. `--wat` → `error: unknown option '--wat'`. |
-| `2` | Impossible configuration — every character class disabled, charset empty. | `--no-lower --no-upper --no-digits` (without `-s`) → `error: no character classes enabled`. |
+| `2` | Impossible configuration — resulting alphabet is empty. | `--no-lower --no-upper --no-digits` (without `-s`) or `--no-upper --no-digits --exclude-chars abcdefghijklmnopqrstuvwxyz` → `error: resulting alphabet is empty`. |
 
 Errors go to **stderr**; passwords go to **stdout**, one per line, so output is pipe-friendly (`ExolvraTestApp -n 10 \| head -1`, etc.).
 
