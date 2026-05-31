@@ -3,7 +3,14 @@ using System.Text;
 
 namespace ExolvraTestApp;
 
-public sealed class PasswordGenerator
+public interface IPasswordGenerator
+{
+    int AlphabetSize { get; }
+
+    string Generate(int length);
+}
+
+public sealed class PasswordGenerator : IPasswordGenerator
 {
     public const int MinLength = 4;
     public const int MaxLength = 1024;

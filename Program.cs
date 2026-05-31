@@ -19,6 +19,7 @@ internal static class Program
         public bool IncludeSymbols { get; set; }
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
+        public bool Quiet { get; set; }
         public bool ShowHelp { get; set; }
         public bool ShowVersion { get; set; }
     }
@@ -85,10 +86,8 @@ internal static class Program
             return 2;
         }
 
-        for (int i = 0; i < opts.Count; i++)
-        {
-            Console.WriteLine(generator.Generate(opts.Length));
-        }
+        var service = new PasswordCliService(generator);
+        service.WritePasswords(new PasswordCliRequest(opts.Length, opts.Count, opts.Quiet), Console.Out);
 
         return 0;
     }
@@ -144,6 +143,11 @@ internal static class Program
                     o.ExcludeAmbiguous = true;
                     break;
 
+                case "-q":
+                case "--quiet":
+                    o.Quiet = true;
+                    break;
+
                 case "--exclude-chars":
                     o.ExcludedChars = RequireValue(args, ref i, a);
                     break;
@@ -193,6 +197,7 @@ internal static class Program
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
+        Console.WriteLine("  -q, --quiet              Print only generated password lines");
         Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
         Console.WriteLine();
