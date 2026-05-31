@@ -19,6 +19,7 @@ internal static class Program
         public bool IncludeSymbols { get; set; }
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
+        public bool Quiet { get; set; }
         public bool ShowHelp { get; set; }
         public bool ShowVersion { get; set; }
     }
@@ -37,15 +38,23 @@ internal static class Program
             return 1;
         }
 
+        bool quietRequested = opts.Quiet || HasQuietFlag(args);
+
         if (opts.ShowHelp)
         {
-            PrintHelp();
+            if (!quietRequested)
+            {
+                PrintHelp();
+            }
             return 0;
         }
 
         if (opts.ShowVersion)
         {
-            PrintVersion();
+            if (!quietRequested)
+            {
+                PrintVersion();
+            }
             return 0;
         }
 
@@ -148,6 +157,11 @@ internal static class Program
                     o.ExcludedChars = RequireValue(args, ref i, a);
                     break;
 
+                case "-q":
+                case "--quiet":
+                    o.Quiet = true;
+                    break;
+
                 default:
                     throw new ArgumentException($"unknown option '{a}'");
             }
@@ -178,6 +192,11 @@ internal static class Program
         return args[++i];
     }
 
+    private static bool HasQuietFlag(string[] args)
+    {
+        return Array.Exists(args, static a => a is "-q" or "--quiet");
+    }
+
     private static void PrintHelp()
     {
         Console.WriteLine("ExolvraTestApp — cryptographic password generator");
@@ -193,6 +212,7 @@ internal static class Program
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
+        Console.WriteLine("  -q, --quiet              Suppress non-password output");
         Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
         Console.WriteLine();

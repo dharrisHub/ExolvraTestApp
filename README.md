@@ -54,6 +54,7 @@ ExolvraTestApp [options]
 | `-s` | `--symbols` | off | Include symbols `!@#$%^&*()-_=+[]{};:,.<>/?`. |
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
+| `-q` | `--quiet` | off | Suppress non-password output. Generated passwords are still printed one per line. |
 | `-v` | `--version` |  | Print the application version and exit without generating a password. |
 | `-h` | `--help` |  | Print help and exit. |
 
@@ -85,6 +86,12 @@ Exclude specific characters from the generated alphabet:
 
 ```bash
 $ ExolvraTestApp -l 20 --exclude-chars O0l1
+```
+
+Quiet mode prints only generated password lines:
+
+```bash
+$ ExolvraTestApp --quiet --num 2
 ```
 
 Print the application version:
