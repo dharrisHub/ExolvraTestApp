@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace ExolvraTestApp;
 
@@ -19,6 +20,7 @@ internal static class Program
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
         public bool ShowHelp { get; set; }
+        public bool ShowVersion { get; set; }
     }
 
     public static int Main(string[] args)
@@ -38,6 +40,12 @@ internal static class Program
         if (opts.ShowHelp)
         {
             PrintHelp();
+            return 0;
+        }
+
+        if (opts.ShowVersion)
+        {
+            PrintVersion();
             return 0;
         }
 
@@ -96,6 +104,11 @@ internal static class Program
                 case "-h":
                 case "--help":
                     o.ShowHelp = true;
+                    return o;
+
+                case "-v":
+                case "--version":
+                    o.ShowVersion = true;
                     return o;
 
                 case "-l":
@@ -179,6 +192,7 @@ internal static class Program
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
+        Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
         Console.WriteLine();
         Console.WriteLine("If stdin is piped and contains a number, it is used as the length.");
@@ -188,5 +202,19 @@ internal static class Program
         Console.WriteLine("  ExolvraTestApp -l 32 -s              # 32 chars with symbols");
         Console.WriteLine("  ExolvraTestApp -n 5 -x               # 5 unambiguous passwords");
         Console.WriteLine("  echo 24 | ExolvraTestApp             # length from stdin");
+    }
+
+    private static void PrintVersion()
+    {
+        string version = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion ?? "1.0.0";
+        int metadataSeparator = version.IndexOf('+', StringComparison.Ordinal);
+        if (metadataSeparator >= 0)
+        {
+            version = version[..metadataSeparator];
+        }
+
+        Console.WriteLine($"ExolvraTestApp {version}");
     }
 }

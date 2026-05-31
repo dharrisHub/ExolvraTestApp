@@ -54,6 +54,7 @@ ExolvraTestApp [options]
 | `-s` | `--symbols` | off | Include symbols `!@#$%^&*()-_=+[]{};:,.<>/?`. |
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
+| `-v` | `--version` |  | Print the application version and exit without generating a password. |
 | `-h` | `--help` |  | Print help and exit. |
 
 If **stdin is piped** and its first line is a number, that number is used as the password length (overriding `-l`).
@@ -84,6 +85,13 @@ Exclude specific characters from the generated alphabet:
 
 ```bash
 $ ExolvraTestApp -l 20 --exclude-chars O0l1
+```
+
+Print the application version:
+
+```bash
+$ ExolvraTestApp --version
+ExolvraTestApp 1.0.0
 ```
 
 Digits only, length 8 (e.g. a PIN):
