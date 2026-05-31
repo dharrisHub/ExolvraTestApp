@@ -47,7 +47,7 @@ ExolvraTestApp [options]
 | Flag | Long form | Default | Effect |
 |---|---|---|---|
 | `-l N` | `--length N` | `16` | Password length. Min `4`, max `1024`. |
-| `-n N` | `--count N` | `1` | Number of passwords to generate (one per line). Max `10000`. |
+| `-n N` | `--count N`, `--num N` | `1` | Number of passwords to generate (one per line). Max `10000`. |
 |  | `--no-lower` | off | Exclude lowercase letters `a–z`. |
 |  | `--no-upper` | off | Exclude uppercase letters `A–Z`. |
 |  | `--no-digits` | off | Exclude digits `0–9`. |
