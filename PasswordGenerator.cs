@@ -19,7 +19,8 @@ public sealed class PasswordGenerator
         bool IncludeUpper = true,
         bool IncludeDigits = true,
         bool IncludeSymbols = false,
-        bool ExcludeAmbiguous = false);
+        bool ExcludeAmbiguous = false,
+        string ExcludedChars = "");
 
     private readonly string _alphabet;
 
@@ -60,12 +61,15 @@ public sealed class PasswordGenerator
         if (c.IncludeDigits) sb.Append(DigitChars);
         if (c.IncludeSymbols) sb.Append(SymbolChars);
 
-        if (!c.ExcludeAmbiguous) return sb.ToString();
+        if (!c.ExcludeAmbiguous && string.IsNullOrEmpty(c.ExcludedChars)) return sb.ToString();
 
         var filtered = new StringBuilder(sb.Length);
         foreach (char ch in sb.ToString())
         {
-            if (AmbiguousChars.IndexOf(ch) < 0) filtered.Append(ch);
+            if (c.ExcludeAmbiguous && AmbiguousChars.IndexOf(ch) >= 0) continue;
+            if (!string.IsNullOrEmpty(c.ExcludedChars) && c.ExcludedChars.IndexOf(ch) >= 0) continue;
+
+            filtered.Append(ch);
         }
         return filtered.ToString();
     }
