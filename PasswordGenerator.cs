@@ -26,18 +26,22 @@ public sealed class PasswordGenerator
 
     private readonly string _alphabet;
     private readonly string _digitAlphabet;
+    private readonly string _letterAlphabet;
 
     public PasswordGenerator(Charset charset)
     {
         _alphabet = BuildAlphabet(charset);
         _digitAlphabet = BuildDigitAlphabet(charset);
+        _letterAlphabet = BuildLetterAlphabet(charset);
     }
 
     public int AlphabetSize => _alphabet.Length;
 
     public int DigitAlphabetSize => _digitAlphabet.Length;
 
-    public string Generate(int length, int minDigits = 0)
+    public int LetterAlphabetSize => _letterAlphabet.Length;
+
+    public string Generate(int length, int minDigits = 0, bool startWithLetter = false)
     {
         if (length < MinLength || length > MaxLength)
         {
@@ -61,19 +65,37 @@ public sealed class PasswordGenerator
         {
             throw new InvalidOperationException("digit alphabet is empty — cannot satisfy minDigits");
         }
+        if (startWithLetter && _letterAlphabet.Length == 0)
+        {
+            throw new InvalidOperationException("letter alphabet is empty — cannot satisfy startWithLetter");
+        }
+        if (startWithLetter && minDigits >= length)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(minDigits),
+                minDigits,
+                "minDigits must leave room for the required starting letter");
+        }
 
         var chars = new char[length];
-        for (int i = 0; i < minDigits; i++)
+        int firstRandomIndex = 0;
+        if (startWithLetter)
+        {
+            chars[0] = _letterAlphabet[RandomNumberGenerator.GetInt32(_letterAlphabet.Length)];
+            firstRandomIndex = 1;
+        }
+
+        for (int i = firstRandomIndex; i < firstRandomIndex + minDigits; i++)
         {
             chars[i] = _digitAlphabet[RandomNumberGenerator.GetInt32(_digitAlphabet.Length)];
         }
 
-        for (int i = minDigits; i < length; i++)
+        for (int i = firstRandomIndex + minDigits; i < length; i++)
         {
             chars[i] = _alphabet[RandomNumberGenerator.GetInt32(_alphabet.Length)];
         }
 
-        Shuffle(chars);
+        Shuffle(chars, firstRandomIndex);
         return new string(chars);
     }
 
@@ -95,6 +117,15 @@ public sealed class PasswordGenerator
             : string.Empty;
     }
 
+    private static string BuildLetterAlphabet(Charset c)
+    {
+        var sb = new StringBuilder();
+        if (c.IncludeLower) sb.Append(LowercaseChars);
+        if (c.IncludeUpper) sb.Append(UppercaseChars);
+
+        return ApplyFilters(sb.ToString(), c.ExcludeSimilar, c.ExcludeAmbiguous, c.ExcludedChars);
+    }
+
     private static string ApplyFilters(string chars, bool excludeSimilar, bool excludeAmbiguous, string excludedChars)
     {
         if (!excludeSimilar && !excludeAmbiguous && string.IsNullOrEmpty(excludedChars)) return chars;
@@ -111,11 +142,11 @@ public sealed class PasswordGenerator
         return filtered.ToString();
     }
 
-    private static void Shuffle(char[] chars)
+    private static void Shuffle(char[] chars, int startIndex = 0)
     {
-        for (int i = chars.Length - 1; i > 0; i--)
+        for (int i = chars.Length - 1; i > startIndex; i--)
         {
-            int j = RandomNumberGenerator.GetInt32(i + 1);
+            int j = RandomNumberGenerator.GetInt32(startIndex, i + 1);
             (chars[i], chars[j]) = (chars[j], chars[i]);
         }
     }

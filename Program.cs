@@ -23,6 +23,7 @@ public static class Program
         public string ExcludedChars { get; set; } = string.Empty;
         public int MinDigits { get; set; }
         public int? MaxLength { get; set; }
+        public bool StartWithLetter { get; set; }
         public bool Quiet { get; set; }
         public bool ShowHelp { get; set; }
         public bool ShowVersion { get; set; }
@@ -103,6 +104,13 @@ public static class Program
             return 1;
         }
 
+        if (opts.StartWithLetter && opts.MinDigits >= opts.Length)
+        {
+            Console.Error.WriteLine(
+                $"error: min-digits must leave room for the required starting letter when --start-with-letter is used (got {opts.MinDigits})");
+            return 1;
+        }
+
         var generator = new PasswordGenerator(new PasswordGenerator.Charset(
             IncludeLower: opts.IncludeLower,
             IncludeUpper: opts.IncludeUpper,
@@ -124,9 +132,15 @@ public static class Program
             return 2;
         }
 
+        if (opts.StartWithLetter && generator.LetterAlphabetSize == 0)
+        {
+            Console.Error.WriteLine("error: start-with-letter requires at least one letter in the generated alphabet");
+            return 2;
+        }
+
         for (int i = 0; i < opts.Count; i++)
         {
-            Console.WriteLine(generator.Generate(opts.Length, opts.MinDigits));
+            Console.WriteLine(generator.Generate(opts.Length, opts.MinDigits, opts.StartWithLetter));
         }
 
         return 0;
@@ -204,6 +218,10 @@ public static class Program
                     o.MaxLength = RequireInt(args, ref i, a);
                     break;
 
+                case "--start-with-letter":
+                    o.StartWithLetter = true;
+                    break;
+
                 case "-q":
                 case "--quiet":
                     o.Quiet = true;
@@ -264,6 +282,7 @@ public static class Program
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
         Console.WriteLine("      --min-digits N       Require at least N digit characters in each password");
         Console.WriteLine("      --max-length N       Cap generated password length at N");
+        Console.WriteLine("      --start-with-letter  Force the first character to be a letter");
         Console.WriteLine("  -q, --quiet              Suppress non-password output");
         Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
