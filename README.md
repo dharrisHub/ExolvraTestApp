@@ -56,6 +56,7 @@ ExolvraTestApp [options]
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
 |  | `--min-digits N` | `0` | Require at least `N` digit characters in every generated password. |
+|  | `--max-length N` | none | Cap the final generated password length at `N`. |
 | `-q` | `--quiet` | off | Suppress non-password output. Generated passwords are still printed one per line. |
 | `-v` | `--version` |  | Print the application version and exit without generating a password. |
 | `-h` | `--help` |  | Print help and exit. |
@@ -108,6 +109,12 @@ Require at least four digits in every generated password:
 $ ExolvraTestApp --length 16 --min-digits 4
 ```
 
+Cap a requested length at 20 characters:
+
+```bash
+$ ExolvraTestApp --length 32 --max-length 20
+```
+
 Print the application version:
 
 ```bash
@@ -132,7 +139,7 @@ $ echo 24 | ExolvraTestApp
 | Code | Meaning | Example trigger |
 |---|---|---|
 | `0` | Success — password(s) printed to stdout. | `ExolvraTestApp --help` or any valid generation. |
-| `1` | Invalid argument — bad flag, non-numeric value, or length/count/min-digits out of range. | `-l 2` → `error: length must be between 4 and 1024 (got 2)`. `--min-digits 20 --length 16` → `error: min-digits must be between 0 and the password length 16 (got 20)`. |
+| `1` | Invalid argument — bad flag, non-numeric value, or length/count/min-digits/max-length out of range. | `-l 2` → `error: length must be between 4 and 1024 (got 2)`. `--max-length 2` → `error: max-length must be between 4 and 1024 (got 2)`. `--min-digits 20 --length 16` → `error: min-digits must be between 0 and the password length 16 (got 20)`. |
 | `2` | Impossible configuration — resulting alphabet is empty or cannot satisfy `--min-digits`. | `--no-lower --no-upper --no-digits` (without `-s`) or `--no-digits --min-digits 1` → `error: min-digits requires at least one digit in the generated alphabet`. |
 
 Errors go to **stderr**; passwords go to **stdout**, one per line, so output is pipe-friendly (`ExolvraTestApp -n 10 \| head -1`, etc.).
