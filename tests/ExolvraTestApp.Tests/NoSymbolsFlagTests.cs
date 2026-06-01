@@ -37,6 +37,17 @@ public sealed class NoSymbolsFlagTests
         Assert.Contains("resulting alphabet is empty", run.StandardError);
     }
 
+    [Fact]
+    public void Main_WhenHelpIsRequested_DescribesNoSymbolsFlag()
+    {
+        CliRun run = RunCli("--help");
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.Equal(string.Empty, run.StandardError);
+        Assert.Contains("--no-symbols", run.StandardOutput);
+        Assert.Contains("Exclude symbols", run.StandardOutput);
+    }
+
     private static CliRun RunCli(params string[] args)
     {
         TextWriter originalOut = Console.Out;
