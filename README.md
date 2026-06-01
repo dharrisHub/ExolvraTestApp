@@ -58,6 +58,7 @@ ExolvraTestApp [options]
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
 |  | `--min-digits N` | `0` | Require at least `N` digit characters in every generated password. |
 |  | `--max-length N` | none | Cap the final generated password length at `N`. |
+|  | `--start-with-letter` | off | Force the first character of every generated password to be an ASCII letter `a-z` or `A-Z`. |
 | `-q` | `--quiet` | off | Suppress non-password output. Generated passwords are still printed one per line. |
 | `-v` | `--version` |  | Print the application version and exit without generating a password. |
 | `-h` | `--help` |  | Print help and exit. |
@@ -122,6 +123,12 @@ Cap a requested length at 20 characters:
 $ ExolvraTestApp --length 32 --max-length 20
 ```
 
+Start every generated password with a letter:
+
+```bash
+$ ExolvraTestApp --start-with-letter
+```
+
 Print the application version:
 
 ```bash
@@ -152,8 +159,8 @@ $ echo 24 | ExolvraTestApp
 | Code | Meaning | Example trigger |
 |---|---|---|
 | `0` | Success — password(s) printed to stdout. | `ExolvraTestApp --help` or any valid generation. |
-| `1` | Invalid argument — bad flag, non-numeric value, or length/count/min-digits/max-length out of range. | `-l 2` → `error: length must be between 4 and 1024 (got 2)`. `--max-length 2` → `error: max-length must be between 4 and 1024 (got 2)`. `--min-digits 20 --length 16` → `error: min-digits must be between 0 and the password length 16 (got 20)`. |
-| `2` | Impossible configuration — resulting alphabet is empty or cannot satisfy `--min-digits`. | `--no-lower --no-upper --no-digits` (without `-s`) or `--no-digits --min-digits 1` → `error: min-digits requires at least one digit in the generated alphabet`. |
+| `1` | Invalid argument — bad flag, non-numeric value, or length/count/min-digits/max-length out of range. | `-l 2` -> `error: length must be between 4 and 1024 (got 2)`. `--max-length 2` -> `error: max-length must be between 4 and 1024 (got 2)`. `--min-digits 20 --length 16` -> `error: min-digits must be between 0 and the password length 16 (got 20)`. |
+| `2` | Impossible configuration — resulting alphabet is empty or cannot satisfy `--min-digits` / `--start-with-letter`. | `--no-lower --no-upper --no-digits` (without `-s`), `--no-digits --min-digits 1`, or `--no-lower --no-uppercase --start-with-letter`. |
 
 Errors go to **stderr**; passwords go to **stdout**, one per line, so output is pipe-friendly (`ExolvraTestApp -n 10 \| head -1`, etc.).
 
@@ -162,3 +169,4 @@ Errors go to **stderr**; passwords go to **stdout**, one per line, so output is 
 - Randomness comes from the OS CSPRNG via `RandomNumberGenerator.GetInt32`, which rejects modulo bias — each character in the enabled charset is equally likely.
 - No password is ever written to a file or logged; it is only printed to stdout. Where you redirect that stream is up to you.
 - `--min-digits N` satisfies digit-minimum policies by drawing at least `N` characters from the filtered digit alphabet, then shuffling them into the password with the same CSPRNG used for normal generation.
+- `--start-with-letter` draws the first character from the filtered lowercase/uppercase letter alphabet, then shuffles only the remaining positions so legacy systems that reject leading digits or symbols receive compatible passwords.
