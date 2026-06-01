@@ -18,6 +18,7 @@ public static class Program
         public bool IncludeDigits { get; set; } = true;
         public bool IncludeSymbols { get; set; }
         public bool ExcludeSymbols { get; set; }
+        public bool ExcludeSimilar { get; set; }
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
         public int MinDigits { get; set; }
@@ -107,6 +108,7 @@ public static class Program
             IncludeUpper: opts.IncludeUpper,
             IncludeDigits: opts.IncludeDigits,
             IncludeSymbols: opts.IncludeSymbols && !opts.ExcludeSymbols,
+            ExcludeSimilar: opts.ExcludeSimilar,
             ExcludeAmbiguous: opts.ExcludeAmbiguous,
             ExcludedChars: opts.ExcludedChars));
 
@@ -181,6 +183,10 @@ public static class Program
                     o.ExcludeSymbols = true;
                     break;
 
+                case "--no-similar":
+                    o.ExcludeSimilar = true;
+                    break;
+
                 case "-x":
                 case "--exclude-ambiguous":
                     o.ExcludeAmbiguous = true;
@@ -253,6 +259,7 @@ public static class Program
         Console.WriteLine("      --no-digits          Exclude digits");
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
         Console.WriteLine("      --no-symbols         Exclude symbols, even when --symbols is also passed");
+        Console.WriteLine("      --no-similar         Exclude look-alike chars (l,I,1,O,0)");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
         Console.WriteLine("      --min-digits N       Require at least N digit characters in each password");
