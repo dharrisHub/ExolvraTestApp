@@ -21,6 +21,7 @@ public static class Program
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
         public int MinDigits { get; set; }
+        public int? MaxLength { get; set; }
         public bool Quiet { get; set; }
         public bool ShowHelp { get; set; }
         public bool ShowVersion { get; set; }
@@ -74,6 +75,18 @@ public static class Program
             Console.Error.WriteLine(
                 $"error: length must be between {PasswordGenerator.MinLength} and {PasswordGenerator.MaxLength} (got {opts.Length})");
             return 1;
+        }
+
+        if (opts.MaxLength is { } maxLength)
+        {
+            if (maxLength < PasswordGenerator.MinLength || maxLength > PasswordGenerator.MaxLength)
+            {
+                Console.Error.WriteLine(
+                    $"error: max-length must be between {PasswordGenerator.MinLength} and {PasswordGenerator.MaxLength} (got {maxLength})");
+                return 1;
+            }
+
+            opts.Length = Math.Min(opts.Length, maxLength);
         }
 
         if (opts.Count < MinCount || opts.Count > MaxCount)
@@ -180,6 +193,10 @@ public static class Program
                     o.MinDigits = RequireInt(args, ref i, a);
                     break;
 
+                case "--max-length":
+                    o.MaxLength = RequireInt(args, ref i, a);
+                    break;
+
                 case "-q":
                 case "--quiet":
                     o.Quiet = true;
@@ -237,6 +254,7 @@ public static class Program
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
         Console.WriteLine("      --min-digits N       Require at least N digit characters in each password");
+        Console.WriteLine("      --max-length N       Cap generated password length at N");
         Console.WriteLine("  -q, --quiet              Suppress non-password output");
         Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
