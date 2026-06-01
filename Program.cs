@@ -164,6 +164,7 @@ public static class Program
                     break;
 
                 case "--no-upper":
+                case "--no-uppercase":
                     o.IncludeUpper = false;
                     break;
 
@@ -247,7 +248,8 @@ public static class Program
         Console.WriteLine("  -l, --length N           Password length (default: 16, min: 4, max: 1024)");
         Console.WriteLine("  -n, --count, --num N     Number of passwords to generate (default: 1)");
         Console.WriteLine("      --no-lower           Exclude lowercase letters");
-        Console.WriteLine("      --no-upper           Exclude uppercase letters");
+        Console.WriteLine("      --no-upper, --no-uppercase");
+        Console.WriteLine("                           Exclude uppercase letters");
         Console.WriteLine("      --no-digits          Exclude digits");
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
         Console.WriteLine("      --no-symbols         Exclude symbols, even when --symbols is also passed");

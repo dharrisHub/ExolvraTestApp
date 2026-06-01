@@ -49,7 +49,7 @@ ExolvraTestApp [options]
 | `-l N` | `--length N` | `16` | Password length. Min `4`, max `1024`. |
 | `-n N` | `--count N`, `--num N` | `1` | Number of passwords to generate (one per line). Max `10000`. |
 |  | `--no-lower` | off | Exclude lowercase letters `a–z`. |
-|  | `--no-upper` | off | Exclude uppercase letters `A–Z`. |
+|  | `--no-upper`, `--no-uppercase` | off | Exclude uppercase letters `A–Z`. |
 |  | `--no-digits` | off | Exclude digits `0–9`. |
 | `-s` | `--symbols` | off | Include symbols `!@#$%^&*()-_=+[]{};:,.<>/?`. |
 |  | `--no-symbols` | off | Exclude symbols, even when `--symbols` is also passed. |
@@ -126,6 +126,12 @@ Digits only, length 8 (e.g. a PIN):
 
 ```bash
 $ ExolvraTestApp -l 8 --no-lower --no-upper
+```
+
+Lowercase and digits only:
+
+```bash
+$ ExolvraTestApp --no-uppercase
 ```
 
 Length from stdin (useful in shell pipelines):
