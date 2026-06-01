@@ -12,6 +12,7 @@ public sealed class PasswordGenerator
     public const string UppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public const string DigitChars = "0123456789";
     public const string SymbolChars = "!@#$%^&*()-_=+[]{};:,.<>/?";
+    public const string SimilarChars = "lI1O0";
     public const string AmbiguousChars = "0O1lI|`'\"";
 
     public sealed record Charset(
@@ -19,6 +20,7 @@ public sealed class PasswordGenerator
         bool IncludeUpper = true,
         bool IncludeDigits = true,
         bool IncludeSymbols = false,
+        bool ExcludeSimilar = false,
         bool ExcludeAmbiguous = false,
         string ExcludedChars = "");
 
@@ -83,23 +85,24 @@ public sealed class PasswordGenerator
         if (c.IncludeDigits) sb.Append(DigitChars);
         if (c.IncludeSymbols) sb.Append(SymbolChars);
 
-        return ApplyFilters(sb.ToString(), c.ExcludeAmbiguous, c.ExcludedChars);
+        return ApplyFilters(sb.ToString(), c.ExcludeSimilar, c.ExcludeAmbiguous, c.ExcludedChars);
     }
 
     private static string BuildDigitAlphabet(Charset c)
     {
         return c.IncludeDigits
-            ? ApplyFilters(DigitChars, c.ExcludeAmbiguous, c.ExcludedChars)
+            ? ApplyFilters(DigitChars, c.ExcludeSimilar, c.ExcludeAmbiguous, c.ExcludedChars)
             : string.Empty;
     }
 
-    private static string ApplyFilters(string chars, bool excludeAmbiguous, string excludedChars)
+    private static string ApplyFilters(string chars, bool excludeSimilar, bool excludeAmbiguous, string excludedChars)
     {
-        if (!excludeAmbiguous && string.IsNullOrEmpty(excludedChars)) return chars;
+        if (!excludeSimilar && !excludeAmbiguous && string.IsNullOrEmpty(excludedChars)) return chars;
 
         var filtered = new StringBuilder(chars.Length);
         foreach (char ch in chars)
         {
+            if (excludeSimilar && SimilarChars.IndexOf(ch) >= 0) continue;
             if (excludeAmbiguous && AmbiguousChars.IndexOf(ch) >= 0) continue;
             if (!string.IsNullOrEmpty(excludedChars) && excludedChars.IndexOf(ch) >= 0) continue;
 

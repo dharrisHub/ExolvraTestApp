@@ -53,6 +53,7 @@ ExolvraTestApp [options]
 |  | `--no-digits` | off | Exclude digits `0–9`. |
 | `-s` | `--symbols` | off | Include symbols `!@#$%^&*()-_=+[]{};:,.<>/?`. |
 |  | `--no-symbols` | off | Exclude symbols, even when `--symbols` is also passed. |
+|  | `--no-similar` | off | Exclude look-alike characters: `l I 1 O 0`. |
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
 |  | `--min-digits N` | `0` | Require at least `N` digit characters in every generated password. |
@@ -89,6 +90,12 @@ Exclude specific characters from the generated alphabet:
 
 ```bash
 $ ExolvraTestApp -l 20 --exclude-chars O0l1
+```
+
+Exclude common look-alike characters:
+
+```bash
+$ ExolvraTestApp -l 20 --no-similar
 ```
 
 Letters and digits only, even if a script also passes `--symbols`:
