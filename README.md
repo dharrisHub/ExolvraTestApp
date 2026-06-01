@@ -55,6 +55,7 @@ ExolvraTestApp [options]
 |  | `--no-symbols` | off | Exclude symbols, even when `--symbols` is also passed. |
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
+|  | `--min-digits N` | `0` | Require at least `N` digit characters in every generated password. |
 | `-q` | `--quiet` | off | Suppress non-password output. Generated passwords are still printed one per line. |
 | `-v` | `--version` |  | Print the application version and exit without generating a password. |
 | `-h` | `--help` |  | Print help and exit. |
@@ -101,6 +102,12 @@ Quiet mode prints only generated password lines:
 $ ExolvraTestApp --quiet --num 2
 ```
 
+Require at least four digits in every generated password:
+
+```bash
+$ ExolvraTestApp --length 16 --min-digits 4
+```
+
 Print the application version:
 
 ```bash
@@ -125,8 +132,8 @@ $ echo 24 | ExolvraTestApp
 | Code | Meaning | Example trigger |
 |---|---|---|
 | `0` | Success — password(s) printed to stdout. | `ExolvraTestApp --help` or any valid generation. |
-| `1` | Invalid argument — bad flag, non-numeric value, or length/count out of range. | `-l 2` → `error: length must be between 4 and 1024 (got 2)`. `--wat` → `error: unknown option '--wat'`. |
-| `2` | Impossible configuration — resulting alphabet is empty. | `--no-lower --no-upper --no-digits` (without `-s`) or `--no-upper --no-digits --exclude-chars abcdefghijklmnopqrstuvwxyz` → `error: resulting alphabet is empty`. |
+| `1` | Invalid argument — bad flag, non-numeric value, or length/count/min-digits out of range. | `-l 2` → `error: length must be between 4 and 1024 (got 2)`. `--min-digits 20 --length 16` → `error: min-digits must be between 0 and the password length 16 (got 20)`. |
+| `2` | Impossible configuration — resulting alphabet is empty or cannot satisfy `--min-digits`. | `--no-lower --no-upper --no-digits` (without `-s`) or `--no-digits --min-digits 1` → `error: min-digits requires at least one digit in the generated alphabet`. |
 
 Errors go to **stderr**; passwords go to **stdout**, one per line, so output is pipe-friendly (`ExolvraTestApp -n 10 \| head -1`, etc.).
 
@@ -134,4 +141,4 @@ Errors go to **stderr**; passwords go to **stdout**, one per line, so output is 
 
 - Randomness comes from the OS CSPRNG via `RandomNumberGenerator.GetInt32`, which rejects modulo bias — each character in the enabled charset is equally likely.
 - No password is ever written to a file or logged; it is only printed to stdout. Where you redirect that stream is up to you.
-- The app does **not** enforce character-class minimums (e.g. "at least one digit"). For a 16-char password over `[a–zA–Z0–9]` the probability of missing any one class is negligible, and enforcing minimums reduces entropy. If a policy requires it, regenerate or filter downstream.
+- `--min-digits N` satisfies digit-minimum policies by drawing at least `N` characters from the filtered digit alphabet, then shuffling them into the password with the same CSPRNG used for normal generation.

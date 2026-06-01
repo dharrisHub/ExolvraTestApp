@@ -20,6 +20,7 @@ public static class Program
         public bool ExcludeSymbols { get; set; }
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
+        public int MinDigits { get; set; }
         public bool Quiet { get; set; }
         public bool ShowHelp { get; set; }
         public bool ShowVersion { get; set; }
@@ -81,6 +82,13 @@ public static class Program
             return 1;
         }
 
+        if (opts.MinDigits < 0 || opts.MinDigits > opts.Length)
+        {
+            Console.Error.WriteLine(
+                $"error: min-digits must be between 0 and the password length {opts.Length} (got {opts.MinDigits})");
+            return 1;
+        }
+
         var generator = new PasswordGenerator(new PasswordGenerator.Charset(
             IncludeLower: opts.IncludeLower,
             IncludeUpper: opts.IncludeUpper,
@@ -95,9 +103,15 @@ public static class Program
             return 2;
         }
 
+        if (opts.MinDigits > 0 && generator.DigitAlphabetSize == 0)
+        {
+            Console.Error.WriteLine("error: min-digits requires at least one digit in the generated alphabet");
+            return 2;
+        }
+
         for (int i = 0; i < opts.Count; i++)
         {
-            Console.WriteLine(generator.Generate(opts.Length));
+            Console.WriteLine(generator.Generate(opts.Length, opts.MinDigits));
         }
 
         return 0;
@@ -162,6 +176,10 @@ public static class Program
                     o.ExcludedChars = RequireValue(args, ref i, a);
                     break;
 
+                case "--min-digits":
+                    o.MinDigits = RequireInt(args, ref i, a);
+                    break;
+
                 case "-q":
                 case "--quiet":
                     o.Quiet = true;
@@ -218,6 +236,7 @@ public static class Program
         Console.WriteLine("      --no-symbols         Exclude symbols, even when --symbols is also passed");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
+        Console.WriteLine("      --min-digits N       Require at least N digit characters in each password");
         Console.WriteLine("  -q, --quiet              Suppress non-password output");
         Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
