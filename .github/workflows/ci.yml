@@ -17,5 +17,3 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Build (warnings are errors)
         run: dotnet build ExolvraTestApp.csproj -c Release
-      - name: Slow CI (temporary - force park-on-CI for #985 watcher verification)
-        run: sleep 150
