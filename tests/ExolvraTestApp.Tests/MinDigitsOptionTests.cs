@@ -28,6 +28,18 @@ public sealed class MinDigitsOptionTests
         }
     }
 
+    [Fact]
+    public void Main_WhenMinDigitsExceedsLength_ReturnsClearError()
+    {
+        CliRun run = RunCli("--quiet", "--length", "8", "--min-digits", "9");
+
+        Assert.Equal(1, run.ExitCode);
+        Assert.Equal(string.Empty, run.StandardOutput);
+        Assert.Equal(
+            $"error: min-digits must be between 0 and the password length 8 (got 9){Environment.NewLine}",
+            run.StandardError);
+    }
+
     private static CliRun RunCli(params string[] args)
     {
         TextWriter originalOut = Console.Out;
