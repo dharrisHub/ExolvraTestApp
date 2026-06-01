@@ -23,15 +23,19 @@ public sealed class PasswordGenerator
         string ExcludedChars = "");
 
     private readonly string _alphabet;
+    private readonly string _digitAlphabet;
 
     public PasswordGenerator(Charset charset)
     {
         _alphabet = BuildAlphabet(charset);
+        _digitAlphabet = BuildDigitAlphabet(charset);
     }
 
     public int AlphabetSize => _alphabet.Length;
 
-    public string Generate(int length)
+    public int DigitAlphabetSize => _digitAlphabet.Length;
+
+    public string Generate(int length, int minDigits = 0)
     {
         if (length < MinLength || length > MaxLength)
         {
@@ -40,16 +44,34 @@ public sealed class PasswordGenerator
                 length,
                 $"length must be between {MinLength} and {MaxLength}");
         }
+        if (minDigits < 0 || minDigits > length)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(minDigits),
+                minDigits,
+                $"minDigits must be between 0 and the requested length");
+        }
         if (_alphabet.Length == 0)
         {
             throw new InvalidOperationException("alphabet is empty — no character classes enabled");
         }
+        if (minDigits > 0 && _digitAlphabet.Length == 0)
+        {
+            throw new InvalidOperationException("digit alphabet is empty — cannot satisfy minDigits");
+        }
 
         var chars = new char[length];
-        for (int i = 0; i < length; i++)
+        for (int i = 0; i < minDigits; i++)
+        {
+            chars[i] = _digitAlphabet[RandomNumberGenerator.GetInt32(_digitAlphabet.Length)];
+        }
+
+        for (int i = minDigits; i < length; i++)
         {
             chars[i] = _alphabet[RandomNumberGenerator.GetInt32(_alphabet.Length)];
         }
+
+        Shuffle(chars);
         return new string(chars);
     }
 
@@ -61,16 +83,37 @@ public sealed class PasswordGenerator
         if (c.IncludeDigits) sb.Append(DigitChars);
         if (c.IncludeSymbols) sb.Append(SymbolChars);
 
-        if (!c.ExcludeAmbiguous && string.IsNullOrEmpty(c.ExcludedChars)) return sb.ToString();
+        return ApplyFilters(sb.ToString(), c.ExcludeAmbiguous, c.ExcludedChars);
+    }
 
-        var filtered = new StringBuilder(sb.Length);
-        foreach (char ch in sb.ToString())
+    private static string BuildDigitAlphabet(Charset c)
+    {
+        return c.IncludeDigits
+            ? ApplyFilters(DigitChars, c.ExcludeAmbiguous, c.ExcludedChars)
+            : string.Empty;
+    }
+
+    private static string ApplyFilters(string chars, bool excludeAmbiguous, string excludedChars)
+    {
+        if (!excludeAmbiguous && string.IsNullOrEmpty(excludedChars)) return chars;
+
+        var filtered = new StringBuilder(chars.Length);
+        foreach (char ch in chars)
         {
-            if (c.ExcludeAmbiguous && AmbiguousChars.IndexOf(ch) >= 0) continue;
-            if (!string.IsNullOrEmpty(c.ExcludedChars) && c.ExcludedChars.IndexOf(ch) >= 0) continue;
+            if (excludeAmbiguous && AmbiguousChars.IndexOf(ch) >= 0) continue;
+            if (!string.IsNullOrEmpty(excludedChars) && excludedChars.IndexOf(ch) >= 0) continue;
 
             filtered.Append(ch);
         }
         return filtered.ToString();
+    }
+
+    private static void Shuffle(char[] chars)
+    {
+        for (int i = chars.Length - 1; i > 0; i--)
+        {
+            int j = RandomNumberGenerator.GetInt32(i + 1);
+            (chars[i], chars[j]) = (chars[j], chars[i]);
+        }
     }
 }
