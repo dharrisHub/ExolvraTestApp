@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace ExolvraTestApp;
 
-internal static class Program
+public static class Program
 {
     private const int DefaultLength = 16;
     private const int MinCount = 1;
@@ -17,6 +17,7 @@ internal static class Program
         public bool IncludeUpper { get; set; } = true;
         public bool IncludeDigits { get; set; } = true;
         public bool IncludeSymbols { get; set; }
+        public bool ExcludeSymbols { get; set; }
         public bool ExcludeAmbiguous { get; set; }
         public string ExcludedChars { get; set; } = string.Empty;
         public bool Quiet { get; set; }
@@ -84,7 +85,7 @@ internal static class Program
             IncludeLower: opts.IncludeLower,
             IncludeUpper: opts.IncludeUpper,
             IncludeDigits: opts.IncludeDigits,
-            IncludeSymbols: opts.IncludeSymbols,
+            IncludeSymbols: opts.IncludeSymbols && !opts.ExcludeSymbols,
             ExcludeAmbiguous: opts.ExcludeAmbiguous,
             ExcludedChars: opts.ExcludedChars));
 
@@ -146,6 +147,10 @@ internal static class Program
                 case "-s":
                 case "--symbols":
                     o.IncludeSymbols = true;
+                    break;
+
+                case "--no-symbols":
+                    o.ExcludeSymbols = true;
                     break;
 
                 case "-x":
@@ -210,6 +215,7 @@ internal static class Program
         Console.WriteLine("      --no-upper           Exclude uppercase letters");
         Console.WriteLine("      --no-digits          Exclude digits");
         Console.WriteLine("  -s, --symbols            Include symbols (!@#$%^&*...)");
+        Console.WriteLine("      --no-symbols         Exclude symbols, even when --symbols is also passed");
         Console.WriteLine("  -x, --exclude-ambiguous  Exclude visually ambiguous chars (0,O,1,l,I,|)");
         Console.WriteLine("      --exclude-chars CHARS Exclude each listed character from the alphabet");
         Console.WriteLine("  -q, --quiet              Suppress non-password output");

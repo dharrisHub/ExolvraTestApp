@@ -52,6 +52,7 @@ ExolvraTestApp [options]
 |  | `--no-upper` | off | Exclude uppercase letters `A–Z`. |
 |  | `--no-digits` | off | Exclude digits `0–9`. |
 | `-s` | `--symbols` | off | Include symbols `!@#$%^&*()-_=+[]{};:,.<>/?`. |
+|  | `--no-symbols` | off | Exclude symbols, even when `--symbols` is also passed. |
 | `-x` | `--exclude-ambiguous` | off | Strip visually ambiguous characters: `0 O 1 l I \| ` `` ` `` `'` `"`. |
 |  | `--exclude-chars CHARS` | empty | Remove every listed character from the generated alphabet after class flags and ambiguous-character filtering. |
 | `-q` | `--quiet` | off | Suppress non-password output. Generated passwords are still printed one per line. |
@@ -86,6 +87,12 @@ Exclude specific characters from the generated alphabet:
 
 ```bash
 $ ExolvraTestApp -l 20 --exclude-chars O0l1
+```
+
+Letters and digits only, even if a script also passes `--symbols`:
+
+```bash
+$ ExolvraTestApp --symbols --no-symbols
 ```
 
 Quiet mode prints only generated password lines:
