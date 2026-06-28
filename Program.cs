@@ -1,5 +1,8 @@
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("ExolvraTestApp.Tests")]
 
 namespace ExolvraTestApp;
 
@@ -9,7 +12,7 @@ internal static class Program
     private const int MinCount = 1;
     private const int MaxCount = 10_000;
 
-    private sealed class Options
+    internal sealed class Options
     {
         public int Length { get; set; } = DefaultLength;
         public int Count { get; set; } = 1;
@@ -93,12 +96,27 @@ internal static class Program
         return 0;
     }
 
-    private static Options ParseArgs(string[] args)
+    // Long options that take a value also accept an inline `--flag=value` form.
+    private static readonly string[] ValueTakingLongOptions = { "--length", "--count", "--exclude-chars" };
+
+    internal static Options ParseArgs(string[] args)
     {
         var o = new Options();
         for (int i = 0; i < args.Length; i++)
         {
             string a = args[i];
+
+            // Split `--flag=value` on the first `=`, but only for known value-taking long options.
+            // This leaves boolean/unknown tokens (e.g. `--symbols=true`, `--foo=bar`) intact so they
+            // still error clearly with the full token rather than silently dropping the `=value`.
+            string? inline = null;
+            int eq = a.StartsWith("--", StringComparison.Ordinal) ? a.IndexOf('=', StringComparison.Ordinal) : -1;
+            if (eq > 0 && Array.IndexOf(ValueTakingLongOptions, a[..eq]) >= 0)
+            {
+                inline = a[(eq + 1)..];
+                a = a[..eq];
+            }
+
             switch (a)
             {
                 case "-h":
@@ -113,12 +131,12 @@ internal static class Program
 
                 case "-l":
                 case "--length":
-                    o.Length = RequireInt(args, ref i, a);
+                    o.Length = RequireInt(args, ref i, a, inline);
                     break;
 
                 case "-n":
                 case "--count":
-                    o.Count = RequireInt(args, ref i, a);
+                    o.Count = RequireInt(args, ref i, a, inline);
                     break;
 
                 case "--no-lower":
@@ -144,7 +162,7 @@ internal static class Program
                     break;
 
                 case "--exclude-chars":
-                    o.ExcludedChars = RequireValue(args, ref i, a);
+                    o.ExcludedChars = RequireValue(args, ref i, a, inline);
                     break;
 
                 default:
@@ -154,13 +172,22 @@ internal static class Program
         return o;
     }
 
-    private static int RequireInt(string[] args, ref int i, string flag)
+    private static int RequireInt(string[] args, ref int i, string flag, string? inline)
     {
-        if (i + 1 >= args.Length)
+        string raw;
+        if (inline is not null)
+        {
+            raw = inline;
+        }
+        else if (i + 1 < args.Length)
+        {
+            raw = args[++i];
+        }
+        else
         {
             throw new ArgumentException($"{flag} requires a numeric value");
         }
-        string raw = args[++i];
+
         if (!int.TryParse(raw, out int value))
         {
             throw new ArgumentException($"{flag} expected a number, got '{raw}'");
@@ -168,8 +195,12 @@ internal static class Program
         return value;
     }
 
-    private static string RequireValue(string[] args, ref int i, string flag)
+    private static string RequireValue(string[] args, ref int i, string flag, string? inline)
     {
+        if (inline is not null)
+        {
+            return inline;
+        }
         if (i + 1 >= args.Length)
         {
             throw new ArgumentException($"{flag} requires a value");
@@ -200,6 +231,7 @@ internal static class Program
         Console.WriteLine("Examples:");
         Console.WriteLine("  ExolvraTestApp                       # one 16-char password");
         Console.WriteLine("  ExolvraTestApp -l 32 -s              # 32 chars with symbols");
+        Console.WriteLine("  ExolvraTestApp --length=32           # inline --flag=value form");
         Console.WriteLine("  ExolvraTestApp -n 5 -x               # 5 unambiguous passwords");
         Console.WriteLine("  echo 24 | ExolvraTestApp             # length from stdin");
     }

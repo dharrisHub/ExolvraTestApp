@@ -13,4 +13,9 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <!-- The test project lives under tests/; keep its sources out of the app build. -->
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
 </Project>
