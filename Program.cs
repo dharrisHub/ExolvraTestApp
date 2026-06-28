@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Reflection;
 
 namespace ExolvraTestApp;
@@ -24,6 +25,7 @@ public static class Program
         public int MinDigits { get; set; }
         public int? MaxLength { get; set; }
         public bool StartWithLetter { get; set; }
+        public bool ShowEntropy { get; set; }
         public bool Quiet { get; set; }
         public bool ShowHelp { get; set; }
         public bool ShowVersion { get; set; }
@@ -138,6 +140,17 @@ public static class Program
             return 2;
         }
 
+        if (opts.ShowEntropy && !quietRequested)
+        {
+            double entropyBits = opts.Length * Math.Log2(generator.AlphabetSize);
+            Console.Error.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "# entropy: {0:F1} bits (alphabet {1}, length {2})",
+                entropyBits,
+                generator.AlphabetSize,
+                opts.Length));
+        }
+
         for (int i = 0; i < opts.Count; i++)
         {
             Console.WriteLine(generator.Generate(opts.Length, opts.MinDigits, opts.StartWithLetter));
@@ -222,6 +235,10 @@ public static class Program
                     o.StartWithLetter = true;
                     break;
 
+                case "--show-entropy":
+                    o.ShowEntropy = true;
+                    break;
+
                 case "-q":
                 case "--quiet":
                     o.Quiet = true;
@@ -283,6 +300,7 @@ public static class Program
         Console.WriteLine("      --min-digits N       Require at least N digit characters in each password");
         Console.WriteLine("      --max-length N       Cap generated password length at N");
         Console.WriteLine("      --start-with-letter  Force the first character to be a letter");
+        Console.WriteLine("      --show-entropy       Print each password's strength in bits (to stderr)");
         Console.WriteLine("  -q, --quiet              Suppress non-password output");
         Console.WriteLine("  -v, --version            Print version and exit");
         Console.WriteLine("  -h, --help               Show this help");
